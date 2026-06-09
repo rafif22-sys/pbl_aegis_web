@@ -1,0 +1,1268 @@
+{
+    "openapi": "3.0.0",
+    "info": {
+        "title": "AEGIS API",
+        "description": "Dokumentasi API Project AEGIS",
+        "version": "1.0.0"
+    },
+    "servers": [
+        {
+            "url": "http://localhost:8000",
+            "description": "Local Development Server"
+        }
+    ],
+    "paths": {
+        "/api/auth/login": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Login user",
+                "description": "Login untuk petugas, supervisor, dan warga. Admin tidak bisa login via API ini.",
+                "operationId": "391ff20c319bb76c327863f160ad6494",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "password"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "petugas@aegis.com"
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "password123"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Login berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Login berhasil."
+                                        },
+                                        "token": {
+                                            "type": "string",
+                                            "example": "55|ac8pAB1rl3GkCsis..."
+                                        },
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nama": {
+                                                    "type": "string",
+                                                    "example": "Budi Santoso"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "petugas@aegis.com"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "petugas",
+                                                    "enum": [
+                                                        "petugas",
+                                                        "supervisor",
+                                                        "warga"
+                                                    ]
+                                                },
+                                                "tanggal_lahir": {
+                                                    "type": "string",
+                                                    "example": "1999-05-18"
+                                                },
+                                                "alamat": {
+                                                    "type": "string",
+                                                    "example": "Jl. Merdeka No. 1"
+                                                },
+                                                "no_hp": {
+                                                    "type": "string",
+                                                    "example": "08123456789"
+                                                },
+                                                "foto_profil": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/foto_profil.jpg",
+                                                    "nullable": true
+                                                },
+                                                "tanggal_bergabung": {
+                                                    "type": "string",
+                                                    "example": "2024-01-01"
+                                                },
+                                                "wilayah_pengawasan": {
+                                                    "type": "string",
+                                                    "example": "Wilayah A",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Email atau password salah",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Email atau password salah."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "403": {
+                        "description": "Akun tidak memiliki akses ke aplikasi mobile (role admin)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Akun ini tidak memiliki akses ke aplikasi mobile."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/auth/me": {
+            "get": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Get profil user yang sedang login",
+                "description": "Mengembalikan data profil user berdasarkan token yang digunakan.",
+                "operationId": "561f564b3178f90160bf6db073103e45",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "user": {
+                                            "properties": {
+                                                "id": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "nama": {
+                                                    "type": "string",
+                                                    "example": "Budi Santoso"
+                                                },
+                                                "email": {
+                                                    "type": "string",
+                                                    "example": "petugas@aegis.com"
+                                                },
+                                                "role": {
+                                                    "type": "string",
+                                                    "example": "petugas"
+                                                },
+                                                "tanggal_lahir": {
+                                                    "type": "string",
+                                                    "example": "1999-05-18"
+                                                },
+                                                "alamat": {
+                                                    "type": "string",
+                                                    "example": "Jl. Merdeka No. 1"
+                                                },
+                                                "no_hp": {
+                                                    "type": "string",
+                                                    "example": "08123456789"
+                                                },
+                                                "foto_profil": {
+                                                    "type": "string",
+                                                    "example": "http://localhost:8000/foto_profil.jpg",
+                                                    "nullable": true
+                                                },
+                                                "tanggal_bergabung": {
+                                                    "type": "string",
+                                                    "example": "2024-01-01"
+                                                },
+                                                "wilayah_pengawasan": {
+                                                    "type": "string",
+                                                    "example": "Wilayah A",
+                                                    "nullable": true
+                                                },
+                                                "supervisor": {
+                                                    "description": "Hanya ada jika role petugas dan memiliki supervisor",
+                                                    "properties": {
+                                                        "id": {
+                                                            "type": "integer",
+                                                            "example": 2
+                                                        },
+                                                        "nama": {
+                                                            "type": "string",
+                                                            "example": "Supervisor A"
+                                                        }
+                                                    },
+                                                    "type": "object",
+                                                    "nullable": true
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/logout": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout user",
+                "description": "Menghapus token yang sedang digunakan (logout dari device saat ini saja).",
+                "operationId": "552211aa0afac05d6a95f176377cf793",
+                "responses": {
+                    "200": {
+                        "description": "Logout berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Logout berhasil."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/logout-all": {
+            "post": {
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Logout semua device",
+                "description": "Menghapus semua token user (logout dari semua device sekaligus).",
+                "operationId": "be56104b3294c89984e703061ad4c208",
+                "responses": {
+                    "200": {
+                        "description": "Semua sesi berhasil dihapus",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Semua sesi berhasil dihapus."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/auth/forgot-password": {
+            "post": {
+                "tags": [
+                    "Forgot Password"
+                ],
+                "summary": "Kirim OTP ke email",
+                "description": "Step 1: Mengirimkan kode OTP 6 digit ke email user. Selalu mengembalikan response 200 meskipun email tidak terdaftar, untuk mencegah bocornya informasi email valid/tidak valid.",
+                "operationId": "eb1fcf4075cb05087a41476f6ae120fd",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "petugas@aegis.com"
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP dikirim (atau email tidak terdaftar, response tetap sama)",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Jika email terdaftar, kode OTP akan dikirimkan."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                }
+            }
+        },
+        "/api/auth/verify-otp": {
+            "post": {
+                "tags": [
+                    "Forgot Password"
+                ],
+                "summary": "Verifikasi kode OTP",
+                "description": "Step 2: Memverifikasi kode OTP yang dikirim ke email. OTP berlaku selama 10 menit. Jika valid, mengembalikan reset_token untuk digunakan di step berikutnya.",
+                "operationId": "31a96f4792f047ce7b80ab24f4faa67e",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "email",
+                                    "otp"
+                                ],
+                                "properties": {
+                                    "email": {
+                                        "type": "string",
+                                        "format": "email",
+                                        "example": "petugas@aegis.com"
+                                    },
+                                    "otp": {
+                                        "type": "string",
+                                        "example": "123456",
+                                        "maxLength": 6,
+                                        "minLength": 6
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "OTP valid",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "OTP valid."
+                                        },
+                                        "reset_token": {
+                                            "description": "Token terenkripsi untuk digunakan di step reset password",
+                                            "type": "string",
+                                            "example": "eyJpdiI6Ik..."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "OTP tidak valid atau sudah kadaluarsa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Kode OTP tidak valid."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/api/auth/reset-password": {
+            "post": {
+                "tags": [
+                    "Forgot Password"
+                ],
+                "summary": "Reset password baru",
+                "description": "Step 3: Mengubah password user menggunakan reset_token dari step verifikasi OTP. Setelah berhasil, semua token aktif user akan dihapus (paksa login ulang di semua device).",
+                "operationId": "6bb66758234d558baddd8a7fa920c0b5",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "reset_token",
+                                    "password",
+                                    "password_confirmation"
+                                ],
+                                "properties": {
+                                    "reset_token": {
+                                        "description": "Token dari response verify-otp",
+                                        "type": "string",
+                                        "example": "eyJpdiI6Ik..."
+                                    },
+                                    "password": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "passwordbaru123",
+                                        "minLength": 8
+                                    },
+                                    "password_confirmation": {
+                                        "type": "string",
+                                        "format": "password",
+                                        "example": "passwordbaru123",
+                                        "minLength": 8
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Password berhasil diperbarui",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Password berhasil diperbarui."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "422": {
+                        "description": "Token tidak valid atau sudah kadaluarsa",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Token sudah kadaluarsa atau tidak valid."
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "404": {
+                        "description": "Pengguna tidak ditemukan"
+                    }
+                }
+            }
+        },
+        "/api/petugas/jadwal/mingguan": {
+            "get": {
+                "tags": [
+                    "Jadwal"
+                ],
+                "summary": "Get jadwal mingguan petugas",
+                "description": "Mengambil jadwal dalam satu minggu berdasarkan tanggal yang diberikan. Jika tanggal tidak diisi, default ke hari ini.",
+                "operationId": "c29ee3852ab3c43c3277aa31b3ab2e5f",
+                "parameters": [
+                    {
+                        "name": "tanggal",
+                        "in": "query",
+                        "description": "Tanggal acuan untuk menentukan minggu (format: Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-05-18"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "minggu_mulai": {
+                                            "type": "string",
+                                            "example": "2026-05-13"
+                                        },
+                                        "minggu_akhir": {
+                                            "type": "string",
+                                            "example": "2026-05-19"
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "properties": {
+                                                    "id_jadwal_absensi": {
+                                                        "type": "integer",
+                                                        "example": 1
+                                                    },
+                                                    "tanggal": {
+                                                        "type": "string",
+                                                        "example": "2026-05-18"
+                                                    },
+                                                    "hari": {
+                                                        "type": "string",
+                                                        "example": "Senin"
+                                                    },
+                                                    "pos_jaga": {
+                                                        "type": "string",
+                                                        "example": "Pos A"
+                                                    },
+                                                    "jam_mulai": {
+                                                        "type": "string",
+                                                        "example": "07:00"
+                                                    },
+                                                    "jam_selesai": {
+                                                        "type": "string",
+                                                        "example": "15:00"
+                                                    },
+                                                    "nama_shift": {
+                                                        "type": "string",
+                                                        "example": "Shift Pagi"
+                                                    },
+                                                    "status": {
+                                                        "type": "string",
+                                                        "example": "hadir"
+                                                    },
+                                                    "jam_masuk": {
+                                                        "type": "string",
+                                                        "example": "07:05"
+                                                    },
+                                                    "jam_pulang": {
+                                                        "type": "string",
+                                                        "example": "15:00"
+                                                    }
+                                                },
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/petugas/jadwal/absensi": {
+            "get": {
+                "tags": [
+                    "Jadwal"
+                ],
+                "summary": "Get riwayat absensi petugas",
+                "description": "Mengambil riwayat absensi petugas dengan filter tanggal dan status. Data dipaginasi 15 per halaman.",
+                "operationId": "bdd95c729e721a631907d443492b64a5",
+                "parameters": [
+                    {
+                        "name": "tanggal",
+                        "in": "query",
+                        "description": "Filter berdasarkan tanggal (format: Y-m-d)",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "format": "date",
+                            "example": "2026-05-18"
+                        }
+                    },
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter berdasarkan status absensi",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "hadir",
+                            "enum": [
+                                "menunggu",
+                                "hadir",
+                                "terlambat",
+                                "alpha",
+                                "libur"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "status": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "current_page": {
+                                                    "type": "integer",
+                                                    "example": 1
+                                                },
+                                                "per_page": {
+                                                    "type": "integer",
+                                                    "example": 15
+                                                },
+                                                "total": {
+                                                    "type": "integer",
+                                                    "example": 30
+                                                },
+                                                "data": {
+                                                    "type": "array",
+                                                    "items": {
+                                                        "properties": {
+                                                            "id_jadwal_absensi": {
+                                                                "type": "integer",
+                                                                "example": 1
+                                                            },
+                                                            "tanggal": {
+                                                                "type": "string",
+                                                                "example": "2026-05-18"
+                                                            },
+                                                            "hari": {
+                                                                "type": "string",
+                                                                "example": "Senin"
+                                                            },
+                                                            "pos_jaga": {
+                                                                "type": "string",
+                                                                "example": "Pos A"
+                                                            },
+                                                            "jam_mulai": {
+                                                                "type": "string",
+                                                                "example": "07:00"
+                                                            },
+                                                            "jam_selesai": {
+                                                                "type": "string",
+                                                                "example": "15:00"
+                                                            },
+                                                            "nama_shift": {
+                                                                "type": "string",
+                                                                "example": "Shift Pagi"
+                                                            },
+                                                            "status": {
+                                                                "type": "string",
+                                                                "example": "hadir"
+                                                            },
+                                                            "jam_masuk": {
+                                                                "type": "string",
+                                                                "example": "07:05"
+                                                            },
+                                                            "jam_pulang": {
+                                                                "type": "string",
+                                                                "example": "15:00"
+                                                            }
+                                                        },
+                                                        "type": "object"
+                                                    }
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sos": {
+            "get": {
+                "tags": [
+                    "SOS"
+                ],
+                "summary": "Get semua data SOS",
+                "description": "Dapat diakses oleh petugas, supervisor, dan warga. Bisa difilter berdasarkan status.",
+                "operationId": "6b4e5f6606a9d4a70366fd26dacc1d43",
+                "parameters": [
+                    {
+                        "name": "status",
+                        "in": "query",
+                        "description": "Filter berdasarkan status SOS",
+                        "required": false,
+                        "schema": {
+                            "type": "string",
+                            "example": "menunggu bantuan",
+                            "enum": [
+                                "menunggu bantuan",
+                                "selesai"
+                            ]
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "type": "object"
+                                            }
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "SOS"
+                ],
+                "summary": "Kirim SOS baru",
+                "description": "Dapat diakses oleh petugas, supervisor, dan warga.",
+                "operationId": "29a623ec41851256b903e532d56d1657",
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "required": [
+                                    "latitude",
+                                    "longitude",
+                                    "jenis_keadaan"
+                                ],
+                                "properties": {
+                                    "latitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -6.9667
+                                    },
+                                    "longitude": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 110.4167
+                                    },
+                                    "jenis_keadaan": {
+                                        "type": "string",
+                                        "example": "kebakaran",
+                                        "enum": [
+                                            "kebakaran",
+                                            "pencurian",
+                                            "hewan liar",
+                                            "bencana alam",
+                                            "lainnya"
+                                        ]
+                                    },
+                                    "deskripsi": {
+                                        "type": "string",
+                                        "example": "Ada kebakaran di gedung A",
+                                        "nullable": true
+                                    },
+                                    "bantuan_warga": {
+                                        "type": "boolean",
+                                        "example": false,
+                                        "nullable": true
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "201": {
+                        "description": "SOS berhasil dikirim",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "SOS berhasil dikirim."
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/petugas/sos/{id}": {
+            "patch": {
+                "tags": [
+                    "SOS"
+                ],
+                "summary": "Update status SOS oleh petugas",
+                "description": "Hanya dapat diakses oleh petugas. Jika status selesai, petugas harus berada dalam radius 30 meter dari lokasi kejadian.",
+                "operationId": "7d679a981ae956cb99f03baf2d0a137e",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID SOS",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "selesai",
+                                        "enum": [
+                                            "menunggu bantuan",
+                                            "selesai"
+                                        ]
+                                    },
+                                    "bantuan_warga": {
+                                        "type": "boolean",
+                                        "example": false,
+                                        "nullable": true
+                                    },
+                                    "latitude_petugas": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -6.9667
+                                    },
+                                    "longitude_petugas": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 110.4167
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Data SOS berhasil diperbarui"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Data SOS tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau petugas terlalu jauh dari lokasi",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": false
+                                        },
+                                        "message": {
+                                            "type": "string",
+                                            "example": "Anda harus berada di lokasi kejadian untuk mengkonfirmasi SOS."
+                                        },
+                                        "data": {
+                                            "properties": {
+                                                "jarak_meter": {
+                                                    "type": "integer",
+                                                    "example": 150
+                                                },
+                                                "batas_meter": {
+                                                    "type": "integer",
+                                                    "example": 30
+                                                }
+                                            },
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/supervisor/sos/{id}": {
+            "patch": {
+                "tags": [
+                    "SOS"
+                ],
+                "summary": "Update status SOS oleh supervisor",
+                "description": "Hanya dapat diakses oleh supervisor.",
+                "operationId": "785413c5960072fe22cf256a9ca94ff3",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID SOS",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "requestBody": {
+                    "required": true,
+                    "content": {
+                        "application/json": {
+                            "schema": {
+                                "properties": {
+                                    "status": {
+                                        "type": "string",
+                                        "example": "selesai",
+                                        "enum": [
+                                            "menunggu bantuan",
+                                            "selesai"
+                                        ]
+                                    },
+                                    "bantuan_warga": {
+                                        "type": "boolean",
+                                        "example": false,
+                                        "nullable": true
+                                    },
+                                    "latitude_petugas": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": -6.9667
+                                    },
+                                    "longitude_petugas": {
+                                        "type": "number",
+                                        "format": "float",
+                                        "example": 110.4167
+                                    }
+                                },
+                                "type": "object"
+                            }
+                        }
+                    }
+                },
+                "responses": {
+                    "200": {
+                        "description": "Data SOS berhasil diperbarui"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Data SOS tidak ditemukan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal atau petugas terlalu jauh dari lokasi"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/sos/{id}": {
+            "get": {
+                "tags": [
+                    "SOS"
+                ],
+                "summary": "Get detail SOS",
+                "description": "Dapat diakses oleh petugas, supervisor, dan warga.",
+                "operationId": "7c5e67924cb8861e9ed37177d61d3b84",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "description": "ID SOS",
+                        "required": true,
+                        "schema": {
+                            "type": "integer",
+                            "example": 1
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil",
+                        "content": {
+                            "application/json": {
+                                "schema": {
+                                    "properties": {
+                                        "success": {
+                                            "type": "boolean",
+                                            "example": true
+                                        },
+                                        "data": {
+                                            "type": "object"
+                                        }
+                                    },
+                                    "type": "object"
+                                }
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Data SOS tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tamu": {
+            "get": {
+                "tags": [
+                    "Tamu"
+                ],
+                "summary": "Get semua data tamu",
+                "operationId": "74a9be7a0f3daa1ef7a8d0559cca92c5",
+                "responses": {
+                    "200": {
+                        "description": "Berhasil"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            },
+            "post": {
+                "tags": [
+                    "Tamu"
+                ],
+                "summary": "Tambah data tamu baru",
+                "operationId": "106d822703569667befa314045188991",
+                "responses": {
+                    "201": {
+                        "description": "Berhasil disimpan"
+                    },
+                    "422": {
+                        "description": "Validasi gagal"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        },
+        "/api/tamu/{id}": {
+            "patch": {
+                "tags": [
+                    "Tamu"
+                ],
+                "summary": "Update status tamu",
+                "operationId": "6c65692d9a84e55b81134409b490b5a1",
+                "parameters": [
+                    {
+                        "name": "id",
+                        "in": "path",
+                        "required": true,
+                        "schema": {
+                            "type": "integer"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Berhasil diperbarui"
+                    },
+                    "404": {
+                        "description": "Tidak ditemukan"
+                    }
+                },
+                "security": [
+                    {
+                        "bearerAuth": []
+                    }
+                ]
+            }
+        }
+    },
+    "components": {
+        "securitySchemes": {
+            "bearerAuth": {
+                "type": "http",
+                "bearerFormat": "JWT",
+                "scheme": "bearer"
+            }
+        }
+    },
+    "tags": [
+        {
+            "name": "Auth",
+            "description": "Auth"
+        },
+        {
+            "name": "Forgot Password",
+            "description": "Forgot Password"
+        },
+        {
+            "name": "Jadwal",
+            "description": "Jadwal"
+        },
+        {
+            "name": "SOS",
+            "description": "SOS"
+        },
+        {
+            "name": "Tamu",
+            "description": "Tamu"
+        }
+    ]
+}
