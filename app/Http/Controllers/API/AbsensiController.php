@@ -203,6 +203,19 @@ class AbsensiController extends Controller
             }
         }
 
+        // Cek apakah patroli sudah diselesaikan
+        if ($ja->rute) {
+            $jumlahCheckpoint = $ja->rute->checkpoint()->count();
+            $jumlahDilaporkan = $ja->laporanCheckpoint()->count();
+            
+            if ($jumlahCheckpoint > 0 && $jumlahDilaporkan < $jumlahCheckpoint) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => "Belum bisa absen pulang. Anda harus menyelesaikan patroli terlebih dahulu ($jumlahDilaporkan/$jumlahCheckpoint checkpoint dilaporkan).",
+                ], 422);
+            }
+        }
+
         $jamMulai = Carbon::parse($ja->jadwal->tanggal)
             ->setTime($shift->jam_mulai->hour, $shift->jam_mulai->minute);
 
@@ -266,7 +279,7 @@ class AbsensiController extends Controller
 
         return [
             'id_jadwal_absensi'  => $ja->id,
-            'tanggal'            => $jadwal->tanggal,
+            'tanggal'            => $tanggal->format('Y-m-d'),
             'hari'               => $tanggal->locale('id')->translatedFormat('l'),
             'pos_jaga'           => $posJaga?->nama ?? '-',
             'pos_jaga_lat'       => $posJaga?->latitude,

@@ -206,24 +206,25 @@ class JadwalController extends Controller
                 return redirect()->back()->with('error', 'Kedua petugas libur di hari yang sama, tidak perlu ditukar.');
             }
 
-            // Ambil SEMUA jadwal absensi milik A di tanggal A (termasuk yang libur)
-            $jadwalIdsTanggalA = Jadwal::where('tanggal', $tanggalA)->pluck('id');
-            $semuaAbsensiA     = JadwalAbsensi::whereIn('id_jadwal', $jadwalIdsTanggalA)
+            // Ambil SEMUA id_jadwal di kedua tanggal tersebut
+            $jadwalIds = Jadwal::whereIn('tanggal', [$tanggalA, $tanggalB])->pluck('id');
+
+            // Ambil SEMUA jadwal absensi milik A di kedua tanggal (termasuk libur dan tugas)
+            $semuaAbsensiA = JadwalAbsensi::whereIn('id_jadwal', $jadwalIds)
                 ->where('id_user', $userA)
                 ->get();
 
-            // Ambil SEMUA jadwal absensi milik B di tanggal B (termasuk yang libur)
-            $jadwalIdsTanggalB = Jadwal::where('tanggal', $tanggalB)->pluck('id');
-            $semuaAbsensiB     = JadwalAbsensi::whereIn('id_jadwal', $jadwalIdsTanggalB)
+            // Ambil SEMUA jadwal absensi milik B di kedua tanggal (termasuk libur dan tugas)
+            $semuaAbsensiB = JadwalAbsensi::whereIn('id_jadwal', $jadwalIds)
                 ->where('id_user', $userB)
                 ->get();
 
-            // Pindahkan semua record A (hari A) → ganti id_user menjadi B
+            // Pindahkan semua record A → ganti id_user menjadi B
             foreach ($semuaAbsensiA as $a) {
                 $a->update(['id_user' => $userB]);
             }
 
-            // Pindahkan semua record B (hari B) → ganti id_user menjadi A
+            // Pindahkan semua record B → ganti id_user menjadi A
             foreach ($semuaAbsensiB as $b) {
                 $b->update(['id_user' => $userA]);
             }

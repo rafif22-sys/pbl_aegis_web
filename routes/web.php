@@ -3,8 +3,11 @@
 use App\Http\Controllers\Admin\BukuTamuController;
 use App\Http\Controllers\Admin\CheckpointController;
 use App\Http\Controllers\Admin\DashboardController;
+use App\Http\Controllers\Admin\DetailPresensiController;
 use App\Http\Controllers\Admin\JadwalController;
+use App\Http\Controllers\Admin\LaporanPatroliController;
 use App\Http\Controllers\Admin\PosJagaController;
+use App\Http\Controllers\Admin\RekapPresensiController;
 use App\Http\Controllers\Admin\RuteController;
 use App\Http\Controllers\Admin\UserController;
 use App\Http\Controllers\Auth\WebAuthController;
@@ -61,7 +64,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     // ── Jadwal Absensi ───────────────────────────────────
     Route::get('/jadwal',                      [JadwalController::class, 'index'])          ->name('jadwal.index');
     Route::post('/jadwal',                     [JadwalController::class, 'store'])          ->name('jadwal.store');
-    Route::post('/jadwal/tukar-libur',         [JadwalController::class, 'tukarLibur'])     ->name('jadwal.tukar-libur'); 
+    Route::post('/jadwal/tukar-libur',         [JadwalController::class, 'tukarLibur'])     ->name('jadwal.tukar-libur');
     Route::post('/jadwal/auto-generate',       [JadwalController::class, 'autoGenerate'])   ->name('jadwal.auto-generate');
     Route::put('/jadwal/absensi/{absensi}',    [JadwalController::class, 'update'])         ->name('jadwal.absensi.update');
     Route::delete('/jadwal/absensi/{absensi}', [JadwalController::class, 'destroyAbsensi']) ->name('jadwal.absensi.destroy');
@@ -76,4 +79,26 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::get('/sos',           [SosController::class, 'index'])        ->name('sos.index');
     Route::delete('/sos/{sos}',  [SosController::class, 'destroy'])      ->name('sos.destroy');
     Route::delete('/sos-range',  [SosController::class, 'destroyRange']) ->name('sos.destroy-range');
+
+    // ── Rekap Presensi ───────────────────────────────────
+    // ⚠️ PENTING: 'export' harus SEBELUM '{id}' agar tidak terbaca sebagai parameter
+    Route::get('/rekap-presensi',         [RekapPresensiController::class, 'index'])  ->name('rekap-presensi.index');
+    Route::get('/rekap-presensi/export',  [RekapPresensiController::class, 'export']) ->name('rekap-presensi.export');
+
+    Route::get('/rekap-presensi/{id}',
+        [DetailPresensiController::class, 'index'])
+        ->whereNumber('id')
+        ->name('rekap-presensi.detail');
+
+    Route::get('/rekap-presensi/{id}/absensi/{absensi}',
+        [DetailPresensiController::class, 'show'])
+        ->whereNumber('id')->whereNumber('absensi')
+        ->name('rekap-presensi.detail.show');
+
+    Route::get('/rekap-presensi/{id}/absensi/{absensi}/detail',
+        [DetailPresensiController::class, 'detail'])
+        ->whereNumber('id')->whereNumber('absensi')
+        ->name('rekap-presensi.detail.absensi');
+
+    Route::get('/laporan-patroli', [LaporanPatroliController::class, 'index'])->name('laporan-patroli.index');
 });
