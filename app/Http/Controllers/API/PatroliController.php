@@ -278,12 +278,20 @@ class PatroliController extends Controller
         }
 
         // ── 7. Simpan laporan ───────────────────────────────────────────
+        // Kembalikan ke format path tunggal (menyimpan path foto pertama)
+        $fotoBuktiPath = !empty($fotoPaths) ? $fotoPaths[0] : null;
+
+        Log::info('Patroli: simpan foto_bukti', [
+            'foto_paths'      => $fotoPaths,
+            'foto_bukti'      => $fotoBuktiPath,
+        ]);
+
         $laporan = LaporanCheckpoint::create([
             'id_jadwal_absensi'  => $idJadwalAbsensi,
             'id_rute_checkpoint' => $idRuteCheckpoint,
             'kondisi'            => $request->kondisi,
             'catatan'            => $request->catatan,
-            'foto_bukti'         => !empty($fotoPaths) ? $fotoPaths[0] : '',
+            'foto_bukti'         => $fotoBuktiPath,
             'waktu_laporan'      => $waktuLaporan,
             'status'             => 'selesai',
         ]);

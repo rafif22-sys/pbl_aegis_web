@@ -8,6 +8,7 @@ use App\Http\Controllers\API\SosController;
 use App\Http\Controllers\API\TamuController;
 use App\Http\Controllers\API\PesanController;
 use App\Http\Controllers\API\PatroliController;
+use App\Http\Controllers\API\LaporanPatroliController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth API (Flutter) ──────────────────────────────────
@@ -68,6 +69,11 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:supervisor')->prefix('supervisor')->name('supervisor.')->group(function () {
         Route::patch('/sos/{id}', [SosController::class, 'update'])->name('sos.update');
         Route::post('/pesan', [PesanController::class, 'store']);
+          Route::prefix('laporan')->name('laporan.')->group(function () {
+            Route::get('/minggu-ini',       [LaporanPatroliController::class, 'mingguIni']) ->name('minggu-ini');
+            Route::get('/riwayat',          [LaporanPatroliController::class, 'riwayat'])   ->name('riwayat');
+            Route::get('/harian/{tanggal}', [LaporanPatroliController::class, 'harian'])    ->name('harian');
+        });
     });
 
     // ── Warga Routes ────────────────────────────────────

@@ -136,14 +136,52 @@ class RuteController extends Controller
 
         $rute->update(['nama_rute' => $validated['nama_rute']]);
 
-        // FIX: Detach dulu semua pivot lama agar tidak bentrok unique constraint
-        $rute->checkpoint()->detach();
+        // ── Sync aman: tidak hapus rute_checkpoint yang masih punya laporan ──
+        $checkpointIds = $validated['checkpoints'];
 
-        $pivot = [];
-        foreach ($validated['checkpoints'] as $urutan => $cpId) {
-            $pivot[$cpId] = ['urutan' => $urutan + 1];
+        // rute_checkpoint yang saat ini aktif
+        $existing = $rute->ruteCheckpoints()->with('laporan_checkpoint')->get();
+
+        $existingMap = $existing->keyBy('id_checkpoint'); // id_checkpoint → RuteCheckpoint
+
+        $newIds    = collect($checkpointIds);
+        $oldIds    = $existingMap->keys();
+
+        // Checkpoint yang dihapus dari rute
+        $toRemove  = $oldIds->diff($newIds);
+
+        foreach ($toRemove as $cpId) {
+            $rc = $existingMap[$cpId];
+            if ($rc->laporan_checkpoint->isEmpty()) {
+                // Aman dihapus — tidak ada laporan yang mereferensikan
+                $rc->delete();
+            }
+            // Jika masih ada laporan → biarkan, jangan hapus
+            // (laporan historis tetap tersimpan)
         }
-        $rute->checkpoint()->sync($pivot);
+
+        // Upsert checkpoint baru atau update urutan yang sudah ada
+        foreach ($checkpointIds as $urutan => $cpId) {
+            $rc = $existingMap->get($cpId);
+            if ($rc) {
+                $rc->update(['urutan' => 1000 + $urutan + 1]);
+            }
+        }
+
+        // Pass 2: set urutan final + insert checkpoint baru
+        foreach ($checkpointIds as $urutan => $cpId) {
+            $rc = $existingMap->get($cpId);
+            if ($rc) {
+                // Sudah ada → update ke urutan final
+                $rc->update(['urutan' => $urutan + 1]);
+            } else {
+                // Baru → insert langsung dengan urutan final
+                $rute->ruteCheckpoints()->create([
+                    'id_checkpoint' => $cpId,
+                    'urutan'        => $urutan + 1,
+                ]);
+            }
+        }
 
         return redirect()
             ->route('admin.rute.index', $request->only('search'))
@@ -152,7 +190,17 @@ class RuteController extends Controller
     // ── DESTROY ──────────────────────────────────────────
     public function destroy(Request $request, Rute $rute)
     {
-        $rute->checkpoint()->detach();
+        // Hanya hapus rute_checkpoint yang tidak punya laporan
+        // Yang masih punya laporan dibiarkan (laporan historis aman)
+        foreach ($rute->ruteCheckpoints()->with('laporan_checkpoint')->get() as $rc) {
+            if ($rc->laporan_checkpoint->isEmpty()) {
+                $rc->delete();
+            }
+        }
+
+        // Hapus rute hanya jika semua rute_checkpoint sudah bersih
+        // Jika masih ada yang punya laporan, rute tetap dihapus tapi
+        // rute_checkpoint-nya dibiarkan sebagai arsip historis
         $rute->delete();
 
         return redirect()

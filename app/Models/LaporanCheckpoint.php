@@ -27,8 +27,7 @@ class LaporanCheckpoint extends Model
 
     protected $casts = [
         'catatan'       => 'string',
-        'waktu_laporan' => 'datetime', 
-        'foto'           => 'array',
+        'waktu_laporan' => 'datetime',
     ];
 
 
