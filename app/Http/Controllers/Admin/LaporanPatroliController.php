@@ -77,6 +77,8 @@ class LaporanPatroliController extends Controller
                     'waktu_laporan'   => $lc->waktu_laporan
                                          ? $lc->waktu_laporan->format('d/m/Y H:i')
                                          : null,
+                    'selesai'         => (bool) $lc->selesai,
+                    'penanganan'      => $lc->penanganan,
                 ];
             })->sortBy('urutan')->values();
 

@@ -270,21 +270,29 @@ function DetailDialog({ laporan, onClose }) {
                                     return (
                                         <div key={cp.id} className="rounded-xl p-3"
                                             style={{ border: `1.5px solid ${cfg?.bg ?? C.skyBdr}`, background: cfg ? cfg.bg + "55" : "#f8fbff" }}>
+
+                                            {/* ── Header: nomor, nama, badge kondisi ── */}
                                             <div className="flex items-center gap-2 mb-1.5">
                                                 <span className="w-5 h-5 rounded-full text-[10px] font-bold flex items-center justify-center shrink-0"
                                                     style={{ background: C.blue, color: "white" }}>{idx + 1}</span>
                                                 <span className="text-xs font-semibold flex-1" style={{ color: C.navy }}>{cp.nama_checkpoint}</span>
                                                 <KondisiBadge kondisi={cp.kondisi} />
                                             </div>
+
+                                            {/* ── Waktu & catatan ── */}
+                                            {cp.waktu_laporan && (
+                                                <p className="text-[10px] ml-7 mb-1" style={{ color: C.slate }}>
+                                                    🕐 {cp.waktu_laporan}
+                                                </p>
+                                            )}
                                             {cp.catatan && (
                                                 <p className="text-xs ml-7 leading-relaxed" style={{ color: C.textMain }}>{cp.catatan}</p>
                                             )}
-                                            {cp.waktu_laporan && (
-                                                <p className="text-[10px] ml-7 mt-1" style={{ color: C.slate }}>{cp.waktu_laporan}</p>
-                                            )}
+
+                                            {/* ── Foto bukti ── */}
                                             {cp.foto_bukti && (
                                                 <div className="ml-7 mt-2 flex items-center gap-2 overflow-x-auto pb-1" style={{ scrollbarWidth: "none" }}>
-                                                    {(cp.foto_bukti.match(/foto_\d+\.[a-zA-Z]+$/) ? [1, 2, 3] : [1]).map(num => {
+                                                    {(cp.foto_bukti.match(/foto_\d+\.[a-zA-Z]+$/) ? [1, 2, 3, 4, 5, 6] : [1]).map(num => {
                                                         const url = cp.foto_bukti.replace(/foto_\d+(\.[a-zA-Z]+)$/, `foto_${num}$1`);
                                                         return (
                                                             <div key={num} onClick={() => setFotoZoom(url)} className="block shrink-0 cursor-pointer">
@@ -298,6 +306,42 @@ function DetailDialog({ laporan, onClose }) {
                                                             </div>
                                                         );
                                                     })}
+                                                </div>
+                                            )}
+
+                                            {/* ── Status penanganan (hanya jika bukan aman) ── */}
+                                            {cp.kondisi?.toLowerCase() !== 'aman' && (
+                                                <div className="ml-7 mt-2.5 rounded-lg p-2.5"
+                                                    style={{
+                                                        background: cp.selesai ? "#f0fdf4" : "#fff7ed",
+                                                        border: `1px solid ${cp.selesai ? "#bbf7d0" : "#fed7aa"}`,
+                                                    }}>
+                                                    {/* Status badge */}
+                                                    <div className="flex items-center gap-1.5 mb-1">
+                                                        <span className="text-[10px]">{cp.selesai ? "✅" : "⏳"}</span>
+                                                        <span className="text-[10px] font-bold"
+                                                            style={{ color: cp.selesai ? "#15803d" : "#c2410c" }}>
+                                                            {cp.selesai ? "Penanganan Selesai" : "Belum Ditangani"}
+                                                        </span>
+                                                    </div>
+                                                    {/* Isi penanganan */}
+                                                    {cp.penanganan ? (
+                                                        <div>
+                                                            <p className="text-[10px] font-semibold mb-0.5"
+                                                                style={{ color: "#64748b" }}>
+                                                                Tindakan yang dilakukan:
+                                                            </p>
+                                                            <p className="text-[11px] leading-relaxed"
+                                                                style={{ color: "#334155" }}>
+                                                                {cp.penanganan}
+                                                            </p>
+                                                        </div>
+                                                    ) : (
+                                                        <p className="text-[10px] italic"
+                                                            style={{ color: cp.selesai ? "#86efac" : "#fdba74" }}>
+                                                            {cp.selesai ? "Selesai tanpa catatan penanganan." : "Supervisor belum mencatat penanganan."}
+                                                        </p>
+                                                    )}
                                                 </div>
                                             )}
                                         </div>

@@ -73,6 +73,7 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/minggu-ini',       [LaporanPatroliController::class, 'mingguIni']) ->name('minggu-ini');
             Route::get('/riwayat',          [LaporanPatroliController::class, 'riwayat'])   ->name('riwayat');
             Route::get('/harian/{tanggal}', [LaporanPatroliController::class, 'harian'])    ->name('harian');
+            Route::patch('/checkpoint/{id}/penanganan', [LaporanPatroliController::class, 'updatePenanganan'])->name('checkpoint.penanganan');
         });
     });
 

@@ -22,12 +22,15 @@ class LaporanCheckpoint extends Model
         'foto_bukti',
         'catatan',
         'status',
-        'waktu_laporan', 
+        'waktu_laporan',
+        'selesai',
+        'penanganan',
     ];
 
     protected $casts = [
         'catatan'       => 'string',
         'waktu_laporan' => 'datetime',
+        'selesai'       => 'boolean',
     ];
 
 

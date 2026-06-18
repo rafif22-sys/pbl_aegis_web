@@ -119,6 +119,8 @@ class LaporanPatroliController extends Controller
                 'waktu_laporan'   => $lc->waktu_laporan
                     ? Carbon::parse($lc->waktu_laporan)->format('H:i')
                     : null,
+                'selesai'         => (bool) $lc->selesai,
+                'penanganan'      => $lc->penanganan,
                 'latitude'        => $lc->rute_checkpoint?->checkpoint?->latitude,
                 'longitude'       => $lc->rute_checkpoint?->checkpoint?->longitude,
             ]);
@@ -249,6 +251,39 @@ class LaporanPatroliController extends Controller
             'total_petugas'    => $totalPetugas,
             'total_checkpoint' => $totalCheckpoint,
         ];
+    }
+
+    public function updatePenanganan(Request $request, int $id)
+    {
+        $validated = $request->validate([
+            'selesai'    => 'required|boolean',
+            'penanganan' => 'nullable|string|max:1000',
+        ]);
+
+        $laporan = LaporanCheckpoint::findOrFail($id);
+
+        // Hanya checkpoint yang kondisinya bukan aman yang bisa ditandai selesai
+        if (strtolower($laporan->kondisi) === 'aman') {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Checkpoint kondisi aman tidak perlu penanganan.',
+            ], 422);
+        }
+
+        $laporan->update([
+            'selesai'    => $validated['selesai'],
+            'penanganan' => $validated['penanganan'] ?? null,
+        ]);
+
+        return response()->json([
+            'status'  => 'success',
+            'message' => 'Penanganan berhasil disimpan.',
+            'data'    => [
+                'id'         => $laporan->id,
+                'selesai'    => $laporan->selesai,
+                'penanganan' => $laporan->penanganan,
+            ],
+        ]);
     }
 
     private function _namaHari(int $dayOfWeek): string
