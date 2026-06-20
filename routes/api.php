@@ -68,6 +68,53 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:supervisor')->prefix('supervisor')->name('supervisor.')->group(function () {
         Route::patch('/sos/{id}', [SosController::class, 'update'])->name('sos.update');
         Route::post('/pesan', [PesanController::class, 'store']);
+
+        // --- TAMBAHKAN BARIS INI (Jalur Pintas) ---
+    // --- TAMBAHKAN BARIS INI (Jalur Pintas dengan Filter Supervisor) ---
+    Route::get('/petugas', function (\Illuminate\Http\Request $request) {
+        try {
+            // 1. Ambil ID supervisor yang sedang login
+            $supervisorId = $request->user()->id;
+
+            // 2. Tarik data petugas yang HANYA milik supervisor tersebut
+            $petugas = \App\Models\User::where('role', 'petugas')
+                                       ->where('id_supervisor', $supervisorId)
+                                       ->get();
+            
+            // 3. Loop data petugas untuk menambahkan hitungan dinamis
+            $petugas = $petugas->map(function ($p) {
+                
+                // Hitung Kehadiran (berdasarkan tabel jadwal_absensi)
+                $p->total_kehadiran = \Illuminate\Support\Facades\DB::table('jadwal_absensi')
+                    ->where('id_user', $p->id)
+                    ->whereIn('status', ['hadir', 'terlambat'])
+                    ->count();
+
+                // Hitung Patroli Selesai (Join tabel laporan_checkpoint dan jadwal_absensi)
+                $p->patroli_selesai = \Illuminate\Support\Facades\DB::table('laporan_checkpoint')
+                    ->join('jadwal_absensi', 'laporan_checkpoint.id_jadwal_absensi', '=', 'jadwal_absensi.id')
+                    ->where('jadwal_absensi.id_user', $p->id)
+                    ->where('laporan_checkpoint.status', 'selesai')
+                    ->count();
+
+                return $p;
+            });
+            
+            // 4. Kirim balasan ke Flutter
+            return response()->json([
+                'success' => true,
+                'message' => 'Berhasil mengambil daftar petugas',
+                'data' => $petugas
+            ], 200);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Crash Backend: ' . $e->getMessage(),
+                'data' => []
+            ], 500);
+        }
+    });
     });
 
     // ── Warga Routes ────────────────────────────────────
