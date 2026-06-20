@@ -51,6 +51,7 @@ class JadwalController extends Controller
                 'absensi'     => $j->jadwalAbsensi->map(fn($a) => [
                     'id'     => $a->id,
                     'status' => $a->status,
+                    'pulang_cepat' => (bool) $a->pulang_cepat,
                     'user'   => $a->user ? ['id' => $a->user->id, 'nama' => $a->user->nama] : null,
                     'rute'   => $a->rute ? ['id' => $a->rute->id, 'nama' => $a->rute->nama_rute] : null,
                 ])->values()->toArray(),
@@ -153,6 +154,7 @@ class JadwalController extends Controller
         $validated = $request->validate([
             'id_user' => 'sometimes|exists:users,id',
             'id_rute' => 'sometimes|exists:rute,id',  // ← tabel rute
+            'pulang_cepat' => 'sometimes|boolean',
         ]);
 
         $absensi->update($validated);
@@ -175,6 +177,19 @@ class JadwalController extends Controller
         } catch (\Exception $e) {
             return redirect()->back()->with('error', $e->getMessage());
         }
+    }
+
+    public function togglePulangCepat(Request $request, JadwalAbsensi $absensi)
+    {
+        $validated = $request->validate([
+            'pulang_cepat' => 'required|boolean',
+        ]);
+
+        $absensi->update(['pulang_cepat' => $validated['pulang_cepat']]);
+
+        return redirect()->back()->with('success',
+            $validated['pulang_cepat'] ? 'Petugas ditandai pulang cepat.' : 'Tanda pulang cepat dihapus.'
+        );
     }
 
    public function tukarLibur(Request $request)

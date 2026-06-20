@@ -80,6 +80,9 @@ Route::middleware('auth:sanctum')->group(function () {
     // ── Warga Routes ────────────────────────────────────
     Route::middleware('role:warga')->prefix('warga')->name('warga.')->group(function () {
         // Route::post('/laporan', [WargaLaporanController::class, 'store']);
+        Route::get('/laporan-patroli', [LaporanPatroliController::class, 'riwayat'])->name('laporan-patroli.index');
+        Route::get('/laporan-patroli/minggu-ini', [LaporanPatroliController::class, 'mingguIni'])->name('laporan-patroli.minggu-ini');
+        Route::get('/laporan-patroli/harian/{tanggal}',   [LaporanPatroliController::class, 'harian'])   ->name('laporan-patroli.harian');
     });
 
     // ── Shared (semua role mobile bisa akses) ───────────

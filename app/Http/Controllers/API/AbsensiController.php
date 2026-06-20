@@ -175,20 +175,23 @@ class AbsensiController extends Controller
 
         $batasAkhir = $jamSelesai->copy()->addMinutes(30);
 
-        if ($now->lessThan($jamSelesai)) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Belum waktunya absen pulang. Dibuka pukul ' . $jamSelesai->format('H:i'),
-            ], 422);
-        }
-        if ($now->greaterThan($batasAkhir)) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Batas waktu absen pulang sudah lewat (maks ' . $batasAkhir->format('H:i') . ')',
-            ], 422);
+        // ── Cek waktu pulang — dilewati jika pulang cepat diizinkan ──────────
+        if (!(bool) $ja->pulang_cepat) {
+            if ($now->lessThan($jamSelesai)) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Belum waktunya absen pulang. Dibuka pukul ' . $jamSelesai->format('H:i'),
+                ], 422);
+            }
+            if ($now->greaterThan($batasAkhir)) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Batas waktu absen pulang sudah lewat (maks ' . $batasAkhir->format('H:i') . ')',
+                ], 422);
+            }
         }
 
-        // Cek radius
+        // ── Cek radius — tetap berlaku meski pulang cepat ────────────────────
         $posJaga = $ja->jadwal->posJaga;
         if ($posJaga?->latitude && $posJaga?->longitude) {
             $jarak = $this->hitungJarak(
@@ -203,15 +206,15 @@ class AbsensiController extends Controller
             }
         }
 
-        // Cek apakah patroli sudah diselesaikan
-        if ($ja->rute) {
+        // ── Cek patroli — dilewati jika pulang cepat diizinkan ───────────────
+        if ($ja->rute && !(bool) $ja->pulang_cepat) {
             $jumlahCheckpoint = $ja->rute->checkpoint()->count();
             $jumlahDilaporkan = $ja->laporanCheckpoint()->count();
-            
+
             if ($jumlahCheckpoint > 0 && $jumlahDilaporkan < $jumlahCheckpoint) {
                 return response()->json([
                     'status'  => false,
-                    'message' => "Belum bisa absen pulang. Anda harus menyelesaikan patroli terlebih dahulu ($jumlahDilaporkan/$jumlahCheckpoint checkpoint dilaporkan).",
+                    'message' => "Belum bisa absen pulang. Selesaikan patroli terlebih dahulu ($jumlahDilaporkan/$jumlahCheckpoint checkpoint dilaporkan).",
                 ], 422);
             }
         }
@@ -230,12 +233,10 @@ class AbsensiController extends Controller
             'jamMasuk_tz'      => Carbon::parse($ja->jam_masuk)->timezone(config('app.timezone'))->toDateTimeString(),
             'selisih_menit'    => $jamMasuk->diffInMinutes($jamMulai, false),
             'is_terlambat'     => $jamMasuk->greaterThan($jamMulai->copy()->addMinute()),
+            'pulang_cepat'     => (bool) $ja->pulang_cepat,   // ← log tambahan
         ]);
 
-        // Untuk shift malam: jam masuk yang valid bisa sebelum tengah malam
-        // di hari yang sama dengan tanggal jadwal, sehingga perbandingan
-        // langsung dengan jamMulai sudah benar tanpa addDay.
-        // Toleransi 1 menit untuk menghindari selisih detik kecil.
+        // Toleransi 1 menit untuk menghindari selisih detik kecil
         $statusAkhir = $jamMasuk->greaterThan($jamMulai->copy()->addMinute())
             ? JadwalAbsensi::STATUS_TERLAMBAT
             : JadwalAbsensi::STATUS_HADIR;
@@ -298,10 +299,16 @@ class AbsensiController extends Controller
                 'jumlah_checkpoint' => $ja->rute->checkpoint->count(),
                 'jumlah_dilaporkan' => $ja->laporanCheckpoint()->count(),
             ] : null,
+            'pulang_cepat'       => (bool) $ja->pulang_cepat,   // ← tambah ini
             'boleh_absen_masuk'  => $now->greaterThanOrEqualTo($bolehMasuk) && !$ja->jam_masuk,
             'boleh_absen_pulang' => $ja->jam_masuk && !$ja->jam_pulang
-                && $now->greaterThanOrEqualTo($jamSelesai)
-                && $now->lessThanOrEqualTo($batasPulang),
+                && (
+                    // kondisi normal: sudah waktunya pulang
+                    ($now->greaterThanOrEqualTo($jamSelesai) && $now->lessThanOrEqualTo($batasPulang))
+                    ||
+                    // ← kondisi pulang cepat: admin mengizinkan, sudah masuk
+                    ((bool) $ja->pulang_cepat)
+                ),
             'waktu_buka_masuk'   => $bolehMasuk->format('H:i'),
             'waktu_buka_pulang'  => $jamSelesai->format('H:i'),
             'batas_pulang'       => $batasPulang->format('H:i'),

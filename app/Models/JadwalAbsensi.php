@@ -27,6 +27,7 @@ class JadwalAbsensi extends Model
         'jam_masuk',
         'jam_pulang',
         'status',
+        'pulang_cepat',
         'foto_masuk',
         'foto_pulang',
         'latitude',
@@ -38,6 +39,7 @@ class JadwalAbsensi extends Model
         'jam_pulang' => 'datetime',
         'latitude'   => 'float',
         'longitude'  => 'float',
+        'pulang_cepat',
     ];
 
     public function user()

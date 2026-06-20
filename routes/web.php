@@ -67,6 +67,7 @@ Route::middleware(['auth', 'role:admin'])->prefix('admin')->name('admin.')->grou
     Route::post('/jadwal/tukar-libur',         [JadwalController::class, 'tukarLibur'])     ->name('jadwal.tukar-libur');
     Route::post('/jadwal/auto-generate',       [JadwalController::class, 'autoGenerate'])   ->name('jadwal.auto-generate');
     Route::put('/jadwal/absensi/{absensi}',    [JadwalController::class, 'update'])         ->name('jadwal.absensi.update');
+    Route::patch('/jadwal/absensi/{absensi}/pulang-cepat', [JadwalController::class, 'togglePulangCepat'])->name('jadwal.pulangCepat');
     Route::delete('/jadwal/absensi/{absensi}', [JadwalController::class, 'destroyAbsensi']) ->name('jadwal.absensi.destroy');
     Route::delete('/jadwal/template',          [JadwalController::class, 'destroyTemplate'])->name('jadwal.template.destroy');
 
