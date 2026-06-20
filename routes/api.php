@@ -4,6 +4,7 @@ use App\Http\Controllers\API\AbsensiController;
 use App\Http\Controllers\API\AuthController;
 use App\Http\Controllers\API\ForgotPasswordController;
 use App\Http\Controllers\API\JadwalController;
+use App\Http\Controllers\API\JadwalSupervisorController;
 use App\Http\Controllers\API\SosController;
 use App\Http\Controllers\API\TamuController;
 use App\Http\Controllers\API\PesanController;
@@ -47,17 +48,14 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get( '/{idJadwalAbsensi}',        [PatroliController::class, 'getSesi'])      ->name('sesi');
             Route::post('/{idJadwalAbsensi}/lokasi', [PatroliController::class, 'updateLokasi']) ->name('lokasi');
             Route::post('/{idJadwalAbsensi}/laporan/{idRuteCheckpoint}',         [PatroliController::class, 'buatLaporan'])  ->name('laporan');
-            // Route::get('/absensi/{id}', [JadwalController::class, 'showAbsensi'])->name('absensi.show');
         });
     });
 
     // ── Buku Tamu Routes ────────────────────────────────
-    // GET — semua role bisa lihat
     Route::middleware('role:petugas,supervisor,warga')->group(function () {
         Route::get('/tamu', [TamuController::class, 'index'])->name('tamu.index');
     });
 
-    // 2. Hak Akses TULIS (Hanya boleh dilakukan Petugas lapangan)
     Route::middleware('role:petugas')->group(function () {
         Route::post('/tamu', [TamuController::class, 'store'])->name('tamu.store');
         Route::patch('/tamu/{id}', [TamuController::class, 'update'])->name('tamu.update');
@@ -68,6 +66,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:supervisor')->prefix('supervisor')->name('supervisor.')->group(function () {
         Route::patch('/sos/{id}', [SosController::class, 'update'])->name('sos.update');
         Route::post('/pesan', [PesanController::class, 'store']);
+
+        // Route Baru untuk Master Pos Jaga Supervisor
+        Route::get('/pos-jaga', [JadwalSupervisorController::class, 'posJaga'])->name('pos-jaga');
+
+        Route::prefix('jadwal')->name('jadwal.')->group(function () {
+            Route::get('/mingguan', [JadwalSupervisorController::class, 'mingguan'])->name('mingguan');
+            Route::get('/absensi', [JadwalSupervisorController::class, 'riwayatAbsensi'])->name('absensi.index');
+        });
     });
 
     // ── Warga Routes ────────────────────────────────────
