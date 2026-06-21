@@ -224,7 +224,7 @@ export default function Dashboard({ stats, buku_tamu, rute_patroli, informasi, a
                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#90c4e8" strokeWidth="2">
                                     <path d="M3 11l17-9-9 17-2-8-6-0z" />
                                 </svg>
-                                <h2 className="font-semibold text-xs text-white tracking-wide">PAPAN INFORMASI</h2>
+                                <h2 className="font-semibold text-xs text-white tracking-wide">BROADCAST INFORMASI</h2>
                                 {unread_count > 0 && (
                                     <span
                                         className="ml-auto text-xs px-2 py-0.5 rounded-full font-semibold animate-pulse"

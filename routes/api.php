@@ -67,13 +67,14 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::middleware('role:supervisor')->prefix('supervisor')->name('supervisor.')->group(function () {
         Route::patch('/sos/{id}', [SosController::class, 'update'])->name('sos.update');
         Route::post('/pesan', [PesanController::class, 'store']);
-          Route::prefix('laporan')->name('laporan.')->group(function () {
+        
+        Route::prefix('laporan')->name('laporan.')->group(function () {
             Route::get('/minggu-ini',       [LaporanPatroliController::class, 'mingguIni']) ->name('minggu-ini');
             Route::get('/riwayat',          [LaporanPatroliController::class, 'riwayat'])   ->name('riwayat');
             Route::get('/harian/{tanggal}', [LaporanPatroliController::class, 'harian'])    ->name('harian');
             Route::patch('/checkpoint/{id}/penanganan', [LaporanPatroliController::class, 'updatePenanganan'])->name('checkpoint.penanganan');
+        }); // <-- Tanda kurung penutup yang tadi hilang sudah ditambahkan di sini
 
-        
         Route::get('/pos-jaga', [JadwalSupervisorController::class, 'posJaga'])->name('pos-jaga');
 
         Route::prefix('jadwal')->name('jadwal.')->group(function () {
