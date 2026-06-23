@@ -10,6 +10,7 @@ use App\Http\Controllers\API\TamuController;
 use App\Http\Controllers\API\PesanController;
 use App\Http\Controllers\API\PatroliController;
 use App\Http\Controllers\API\LaporanPatroliController;
+use App\Http\Controllers\API\SupervisorPetugasController;
 use Illuminate\Support\Facades\Route;
 
 // ── Auth API (Flutter) ──────────────────────────────────
@@ -28,6 +29,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/me', [AuthController::class, 'me']);
         Route::post('/logout', [AuthController::class, 'logout']);
         Route::post('/logout-all', [AuthController::class, 'logoutAll']);
+        Route::post('/update-password', [AuthController::class, 'updatePassword']);
     });
 
     // ── Petugas Routes ──────────────────────────────────
@@ -81,6 +83,9 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::get('/mingguan', [JadwalSupervisorController::class, 'mingguan'])->name('mingguan');
             Route::get('/absensi', [JadwalSupervisorController::class, 'riwayatAbsensi'])->name('absensi.index');
         });
+
+
+        Route::get('/petugas', [SupervisorPetugasController::class, 'index'])->name('petugas.index');
     });
 
     // ── Warga Routes ────────────────────────────────────
