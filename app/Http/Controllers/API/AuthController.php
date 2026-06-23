@@ -102,6 +102,32 @@ class AuthController extends Controller
         ]);
     }
 
+    // ── Update Password ─────────────────────────────────
+    public function updatePassword(Request $request): JsonResponse
+    {
+        $request->validate([
+            'current_password' => ['required'],
+            'password' => ['required', 'min:8', 'confirmed'],
+        ]);
+
+        if (! Hash::check($request->current_password, $request->user()->password)) {
+            return response()->json([
+                'message' => 'Kata sandi saat ini tidak cocok.',
+                'errors' => [
+                    'current_password' => ['Kata sandi saat ini tidak cocok.']
+                ]
+            ], 422);
+        }
+
+        $request->user()->update([
+            'password' => Hash::make($request->password),
+        ]);
+
+        return response()->json([
+            'message' => 'Kata sandi berhasil diperbarui.',
+        ]);
+    }
+
     // ── Format response user ────────────────────────────
     private function formatUser(User $user): array
     {

@@ -125,6 +125,34 @@ class FcmService
     }
 
     /**
+     * Kirim notifikasi pengingat absen ke satu user
+     */
+    public function sendAbsenReminder(User $user, string $jenis): void
+    {
+        $token = $user->fcm_token;
+        if (!$token) return;
+
+        if ($jenis === 'masuk') {
+            $judul = 'Waktunya Absen Masuk 🕒';
+            $body  = 'Akses absen masuk Anda sudah terbuka. Segera lakukan absensi!';
+        } else {
+            $judul = 'Waktunya Absen Pulang 🕒';
+            $body  = 'Akses absen pulang Anda sudah terbuka. Jangan lupa absen sebelum pulang!';
+        }
+
+        $data = [
+            'type'  => 'absen_reminder',
+            'title' => $judul,
+            'body'  => $body,
+        ];
+
+        $accessToken = $this->getAccessToken();
+        if (!$accessToken) return;
+
+        $this->kirimKeToken($token, $judul, $body, $data, $accessToken);
+    }
+
+    /**
      * Kirim satu notifikasi ke satu device
      */
     private function kirimKeToken(

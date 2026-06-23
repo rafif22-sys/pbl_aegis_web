@@ -9,3 +9,4 @@ Artisan::command('inspire', function () {
 })->purpose('Display an inspiring quote');
 
 Schedule::command('absensi:mark-alpha')->everyMinute();
+Schedule::command('absensi:send-reminder')->everyMinute();
