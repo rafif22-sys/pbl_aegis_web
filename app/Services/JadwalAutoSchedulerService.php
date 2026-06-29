@@ -102,16 +102,24 @@ class JadwalAutoSchedulerService
                 $toInsert = [];
                 $now      = now();
 
-                foreach ($tanggals as $dayIndex => $tanggal) {
-                    $totalOffset  = ($weekOffset * 7) + $dayIndex;
-                    $totalPetugas = $petugas->count();
-                    $liburIndex   = $totalOffset % $totalPetugas;
+                // ── Tentukan jadwal libur untuk minggu ini (tiap petugas tepat 1 hari)
+                $liburPerHari = [];
+                for ($d = 0; $d < 7; $d++) {
+                    $liburPerHari[$d] = collect();
+                }
 
-                    $petugasList  = $petugas->values();
-                    $petugasLibur = $petugasList[$liburIndex];
-                    $petugasAktif = $petugasList->filter(
-                        fn($p, $i) => $i !== $liburIndex
-                    )->values();
+                // Distribusikan 1 hari libur untuk setiap petugas
+                // Bergeser setiap minggu berdasarkan weekOffset
+                foreach ($petugas->values() as $index => $p) {
+                    $dayOff = ($index + $weekOffset) % 7;
+                    $liburPerHari[$dayOff]->push($p);
+                }
+
+                foreach ($tanggals as $dayIndex => $tanggal) {
+                    $petugasLibur = $liburPerHari[$dayIndex];
+                    $petugasAktif = $petugas->reject(fn($p) => $petugasLibur->contains('id', $p->id))->values();
+
+                    $totalOffset  = ($weekOffset * 7) + $dayIndex;
 
                     $distribusi = $this->bagikanKeShift($petugasAktif, $shifts, $totalOffset);
 
@@ -149,18 +157,20 @@ class JadwalAutoSchedulerService
                     if ($jadwalLibur) {
                         $existingLibur = $existingAbsensi->get($jadwalLibur->id, []);
 
-                        if (!in_array($petugasLibur->id, $existingLibur)) {
-                            $toInsert[] = [
-                                'id_jadwal'  => $jadwalLibur->id,
-                                'id_user'    => $petugasLibur->id,
-                                'id_rute'    => $rutes->first()->id,
-                                'status'     => JadwalAbsensi::STATUS_LIBUR,
-                                'created_at' => $now,
-                                'updated_at' => $now,
-                            ];
-                            $created++;
-                        } else {
-                            $skipped++;
+                        foreach ($petugasLibur as $pLibur) {
+                            if (!in_array($pLibur->id, $existingLibur)) {
+                                $toInsert[] = [
+                                    'id_jadwal'  => $jadwalLibur->id,
+                                    'id_user'    => $pLibur->id,
+                                    'id_rute'    => $rutes->first()->id,
+                                    'status'     => JadwalAbsensi::STATUS_LIBUR,
+                                    'created_at' => $now,
+                                    'updated_at' => $now,
+                                ];
+                                $created++;
+                            } else {
+                                $skipped++;
+                            }
                         }
                     }
                 }
@@ -192,14 +202,40 @@ class JadwalAutoSchedulerService
     private function bagikanPetugasKePos(Collection $petugas, int $jumlahPos): array
     {
         $result = [];
-        $chunks = $petugas->chunk(7);
+        for ($i = 0; $i < $jumlahPos; $i++) {
+            $result[$i] = collect();
+        }
 
-        foreach ($chunks as $chunkIndex => $chunk) {
-            $posIndex = min($chunkIndex, $jumlahPos - 1);
-            if (!isset($result[$posIndex])) {
-                $result[$posIndex] = collect();
+        $withSupervisor = $petugas->filter(fn($p) => !is_null($p->id_supervisor));
+        $withoutSupervisor = $petugas->filter(fn($p) => is_null($p->id_supervisor));
+
+        // Buat array kumpulan grup (tiap elemen adalah Collection petugas)
+        $allGroups = [];
+
+        foreach ($withSupervisor->groupBy('id_supervisor') as $group) {
+            $allGroups[] = $group;
+        }
+
+        // Urutkan grup dari yang terbesar ke terkecil
+        usort($allGroups, fn($a, $b) => $b->count() <=> $a->count());
+
+        // Tambahkan petugas tanpa supervisor satu per satu agar bisa menyeimbangkan
+        foreach ($withoutSupervisor as $p) {
+            $allGroups[] = collect([$p]);
+        }
+
+        // Distribusikan grup ke pos yang jumlah anggotanya paling sedikit
+        foreach ($allGroups as $group) {
+            $minIndex = 0;
+            $minCount = PHP_INT_MAX;
+            for ($i = 0; $i < $jumlahPos; $i++) {
+                $count = $result[$i]->count();
+                if ($count < $minCount) {
+                    $minCount = $count;
+                    $minIndex = $i;
+                }
             }
-            $result[$posIndex] = $result[$posIndex]->merge($chunk);
+            $result[$minIndex] = $result[$minIndex]->merge($group);
         }
 
         return $result;

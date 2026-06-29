@@ -1,5 +1,6 @@
 import { useState, useMemo } from 'react';
 import { router } from '@inertiajs/react';
+import { ConfirmDialog } from './ConfirmDialog';
 
 function InfoRow({ label, value }) {
     return (
@@ -21,6 +22,7 @@ function formatTanggal(dateStr) {
 export function ModalTukarLibur({ open, onClose, absensiLibur, jadwalLibur, jadwals }) {
     const [selectedLiburId, setSelectedLiburId] = useState('');
     const [processing, setProcessing]           = useState(false);
+    const [confirm, setConfirm]                 = useState({ open: false, message: '', onConfirm: null, confirmText: 'Ya', confirmColor: '#005EA4' });
 
     useMemo(() => {
         if (open) setSelectedLiburId('');
@@ -176,7 +178,27 @@ export function ModalTukarLibur({ open, onClose, absensiLibur, jadwalLibur, jadw
                     <button onClick={onClose} disabled={processing}
                         className="px-4 py-2 text-sm rounded-xl border hover:bg-gray-50 disabled:opacity-40"
                         style={{ borderColor: '#c7e8f8', color: '#64748b' }}>
-                        Batal
+                        Tutup
+                    </button>
+                    <button onClick={() => {
+                        setConfirm({
+                            open: true,
+                            message: `Batalkan hari libur untuk ${absensiLibur.user?.nama}? Petugas akan dikembalikan ke shift.`,
+                            confirmText: 'Ya, Batalkan Libur',
+                            confirmColor: '#b45309',
+                            onConfirm: () => {
+                                setConfirm(c => ({ ...c, open: false }));
+                                setProcessing(true);
+                                router.post(route('admin.jadwal.absensi.toggle-libur', absensiLibur.id), {}, {
+                                    onSuccess: () => { setProcessing(false); onClose(); },
+                                    onError: () => { setProcessing(false); },
+                                });
+                            }
+                        });
+                    }} disabled={processing}
+                        className="px-4 py-2 text-sm rounded-xl font-semibold hover:opacity-90 disabled:opacity-40"
+                        style={{ background: '#fef3c7', color: '#b45309' }}>
+                        Batalkan Libur
                     </button>
                     <button onClick={handleSubmit}
                         disabled={!selectedLiburId || processing}
@@ -203,6 +225,15 @@ export function ModalTukarLibur({ open, onClose, absensiLibur, jadwalLibur, jadw
                     </button>
                 </div>
             </div>
+
+            <ConfirmDialog
+                open={confirm.open}
+                message={confirm.message}
+                onConfirm={confirm.onConfirm}
+                onCancel={() => setConfirm(c => ({ ...c, open: false }))}
+                confirmText={confirm.confirmText}
+                confirmColor={confirm.confirmColor}
+            />
         </div>
     );
 }

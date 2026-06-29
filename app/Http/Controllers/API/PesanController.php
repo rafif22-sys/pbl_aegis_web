@@ -99,6 +99,16 @@ class PesanController extends Controller
             $informasi->waktu_kirim = now();
             $informasi->save();
 
+            // Load user untuk FcmService
+            $informasi->load('user');
+
+            // Trigger notifikasi FCM
+            try {
+                app(\App\Services\FcmService::class)->sendInformasiNotification($informasi);
+            } catch (\Throwable $e) {
+                \Illuminate\Support\Facades\Log::error('FCM informasi gagal: ' . $e->getMessage());
+            }
+
             // 3. Beri jawaban sukses ke Flutter
             return response()->json([
                 'success' => true,

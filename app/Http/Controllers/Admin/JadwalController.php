@@ -192,6 +192,17 @@ class JadwalController extends Controller
         );
     }
 
+    public function toggleLibur(Request $request, JadwalAbsensi $absensi)
+    {
+        if ($absensi->status === JadwalAbsensi::STATUS_LIBUR) {
+            $absensi->update(['status' => JadwalAbsensi::STATUS_MENUNGGU]);
+            return redirect()->back()->with('success', 'Libur dibatalkan. Petugas kembali ke shift asal.');
+        } else {
+            $absensi->update(['status' => JadwalAbsensi::STATUS_LIBUR]);
+            return redirect()->back()->with('success', 'Petugas berhasil diliburkan.');
+        }
+    }
+
    public function tukarLibur(Request $request)
     {
         $validated = $request->validate([

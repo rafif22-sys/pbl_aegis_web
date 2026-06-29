@@ -32,7 +32,7 @@ class RekapPresensiController extends Controller
                 'u.foto_profil',
                 'sv.nama as supervisor',
                 DB::raw('COUNT(ja.id)                                                         AS total_jadwal'),
-                DB::raw("SUM(CASE WHEN ja.status IN ('hadir','terlambat') THEN 1 ELSE 0 END)  AS jumlah_hadir"),
+                DB::raw("SUM(CASE WHEN ja.status = 'hadir' THEN 1 ELSE 0 END)  AS jumlah_hadir"),
                 DB::raw("SUM(CASE WHEN ja.status = 'libur'                THEN 1 ELSE 0 END)  AS jumlah_libur"),
                 DB::raw("SUM(CASE WHEN ja.status = 'alpha'                THEN 1 ELSE 0 END)  AS jumlah_alpha"),
                 DB::raw("SUM(CASE WHEN ja.status = 'terlambat'            THEN 1 ELSE 0 END)  AS jumlah_terlambat"),
@@ -69,7 +69,7 @@ class RekapPresensiController extends Controller
             ->select([
                 DB::raw('COUNT(DISTINCT u.id)                                                        AS total_petugas'),
                 DB::raw('COUNT(ja.id)                                                                AS total_jadwal'),
-                DB::raw("SUM(CASE WHEN ja.status IN ('hadir','terlambat') THEN 1 ELSE 0 END)         AS total_hadir"),
+                DB::raw("SUM(CASE WHEN ja.status = 'hadir' THEN 1 ELSE 0 END)         AS total_hadir"),
                 DB::raw("SUM(CASE WHEN ja.status = 'libur'                THEN 1 ELSE 0 END)         AS total_libur"),
                 DB::raw("SUM(CASE WHEN ja.status = 'alpha'                THEN 1 ELSE 0 END)         AS total_alpha"),
                 DB::raw("SUM(CASE WHEN ja.status = 'terlambat'            THEN 1 ELSE 0 END)         AS total_terlambat"),
@@ -181,12 +181,8 @@ class RekapPresensiController extends Controller
                 $formatKeterlambatan = implode(' ', $parts);
             }
 
-            // ── FIX: jumlah_hadir harus mencakup status 'terlambat' ───────────
-            // Konsisten dengan query di index() yang pakai IN ('hadir','terlambat')
-            $jumlahHadir = $jadwal->whereIn('status', [
-                JadwalAbsensi::STATUS_HADIR,
-                JadwalAbsensi::STATUS_TERLAMBAT,
-            ])->count();
+            // ── FIX: jumlah_hadir hanya mencakup status 'hadir' (terlambat dihitung terpisah) ───
+            $jumlahHadir = $jadwal->where('status', JadwalAbsensi::STATUS_HADIR)->count();
 
             return [
                 'id'                  => $user->id,

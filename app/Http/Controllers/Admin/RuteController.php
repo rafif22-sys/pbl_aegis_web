@@ -76,7 +76,10 @@ class RuteController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'nama_rute'      => 'required|string|max:255|unique:rute,nama_rute',
+            'nama_rute'      => [
+                'required', 'string', 'max:255',
+                \Illuminate\Validation\Rule::unique('rute', 'nama_rute')->whereNull('deleted_at'),
+            ],
             'checkpoints'    => 'required|array|min:1',
             'checkpoints.*'  => 'exists:checkpoint,id',
         ], [
@@ -114,7 +117,7 @@ class RuteController extends Controller
         $validated = $request->validate([
             'nama_rute'     => [
                 'required', 'string', 'max:255',
-                \Illuminate\Validation\Rule::unique('rute', 'nama_rute')->ignore($rute->id),
+                \Illuminate\Validation\Rule::unique('rute', 'nama_rute')->ignore($rute->id)->whereNull('deleted_at'),
             ],
             'checkpoints'   => 'required|array|min:1',
             'checkpoints.*' => 'exists:checkpoint,id',
@@ -139,13 +142,15 @@ class RuteController extends Controller
         // ── Sync aman: tidak hapus rute_checkpoint yang masih punya laporan ──
         $checkpointIds = $validated['checkpoints'];
 
-        // rute_checkpoint yang saat ini aktif
-        $existing = $rute->ruteCheckpoints()->with('laporan_checkpoint')->get();
+        // Ambil semua rute_checkpoint untuk rute ini (termasuk yang diarsipkan)
+        $existing = \App\Models\RuteCheckpoint::where('id_rute', $rute->id)->with('laporan_checkpoint')->get();
 
         $existingMap = $existing->keyBy('id_checkpoint'); // id_checkpoint → RuteCheckpoint
 
         $newIds    = collect($checkpointIds);
-        $oldIds    = $existingMap->keys();
+        // Yang dianggap aktif sebelumnya adalah yang urutannya > 0
+        $activeExistingMap = $existing->where('urutan', '>', 0)->keyBy('id_checkpoint');
+        $oldIds    = $activeExistingMap->keys();
 
         // Checkpoint yang dihapus dari rute
         $toRemove  = $oldIds->diff($newIds);
@@ -155,30 +160,34 @@ class RuteController extends Controller
             if ($rc->laporan_checkpoint->isEmpty()) {
                 // Aman dihapus — tidak ada laporan yang mereferensikan
                 $rc->delete();
+                $existingMap->forget($cpId);
+            } else {
+                // Jika masih ada laporan → arsipkan dengan set urutan ke negatif
+                $rc->update(['urutan' => -$rc->id]);
             }
-            // Jika masih ada laporan → biarkan, jangan hapus
-            // (laporan historis tetap tersimpan)
         }
 
-        // Upsert checkpoint baru atau update urutan yang sudah ada
-        foreach ($checkpointIds as $urutan => $cpId) {
+        // Pass 1: pindahkan ke urutan sementara untuk hindari bentrok (id_rute, urutan)
+        foreach ($checkpointIds as $index => $cpId) {
+            $urutanBaru = $index + 1;
             $rc = $existingMap->get($cpId);
             if ($rc) {
-                $rc->update(['urutan' => 1000 + $urutan + 1]);
+                $rc->update(['urutan' => 1000 + $urutanBaru]);
             }
         }
 
         // Pass 2: set urutan final + insert checkpoint baru
-        foreach ($checkpointIds as $urutan => $cpId) {
+        foreach ($checkpointIds as $index => $cpId) {
+            $urutanBaru = $index + 1;
             $rc = $existingMap->get($cpId);
             if ($rc) {
                 // Sudah ada → update ke urutan final
-                $rc->update(['urutan' => $urutan + 1]);
+                $rc->update(['urutan' => $urutanBaru]);
             } else {
                 // Baru → insert langsung dengan urutan final
                 $rute->ruteCheckpoints()->create([
                     'id_checkpoint' => $cpId,
-                    'urutan'        => $urutan + 1,
+                    'urutan'        => $urutanBaru,
                 ]);
             }
         }

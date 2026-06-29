@@ -29,7 +29,7 @@ export function ModalDetail({ open, onClose, jadwal, absensi, petugas, rutes }) 
     const [editRute,  setEditRute]  = useState('');
 
     // ← state untuk confirm dialog
-    const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null });
+    const [confirm, setConfirm] = useState({ open: false, message: '', onConfirm: null, confirmText: 'Hapus', confirmColor: '#dc2626' });
 
     useMemo(() => {
         if (absensi) {
@@ -157,6 +157,24 @@ export function ModalDetail({ open, onClose, jadwal, absensi, petugas, rutes }) 
                                     style={{ background: '#fde8e8', color: '#c0392b' }}>
                                     Hapus Template
                                 </button>
+                                {absensi.status !== 'libur' && (
+                                    <button onClick={() => {
+                                        setConfirm({
+                                            open: true,
+                                            message: `Jadikan hari libur untuk ${absensi.user?.nama}?`,
+                                            confirmText: 'Ya, Jadikan Libur',
+                                            confirmColor: '#b45309',
+                                            onConfirm: () => {
+                                                setConfirm(c => ({ ...c, open: false }));
+                                                router.post(route('admin.jadwal.absensi.toggle-libur', absensi.id), {}, { onSuccess: onClose, preserveScroll: true });
+                                            }
+                                        });
+                                    }}
+                                        className="px-3 py-1.5 text-xs rounded-xl font-semibold hover:opacity-90"
+                                        style={{ background: '#fef3c7', color: '#b45309' }}>
+                                        Jadikan Libur
+                                    </button>
+                                )}
                                 <button onClick={onClose}
                                     className="ml-auto px-4 py-2 text-sm rounded-xl border hover:bg-gray-50"
                                     style={{ borderColor: '#c7e8f8', color: '#64748b' }}>
@@ -174,6 +192,8 @@ export function ModalDetail({ open, onClose, jadwal, absensi, petugas, rutes }) 
                 message={confirm.message}
                 onConfirm={confirm.onConfirm}
                 onCancel={() => setConfirm(c => ({ ...c, open: false }))}
+                confirmText={confirm.confirmText}
+                confirmColor={confirm.confirmColor}
             />
         </>
     );

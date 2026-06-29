@@ -143,7 +143,7 @@ export default function Login() {
                                 </div>
 
                                 {/* REMEMBER */}
-                                <div className="flex items-center justify-between text-sm">
+                                <div className="flex items-center text-sm">
                                     <label className="flex items-center gap-2 text-gray-600 cursor-pointer">
                                         <input
                                             type="checkbox"
@@ -153,16 +153,8 @@ export default function Login() {
                                             }
                                             className="rounded border-gray-300 text-[#0F2A44] focus:ring-[#0F2A44]"
                                         />
-
                                         Ingatkan Saya
                                     </label>
-
-                                    <button
-                                        type="button"
-                                        className="text-[#0F2A44] hover:underline"
-                                    >
-                                        Lupa Password?
-                                    </button>
                                 </div>
 
                                 {/* BUTTON */}

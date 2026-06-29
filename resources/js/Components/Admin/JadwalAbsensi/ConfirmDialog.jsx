@@ -1,4 +1,4 @@
-export function ConfirmDialog({ open, message, onConfirm, onCancel }) {
+export function ConfirmDialog({ open, message, onConfirm, onCancel, confirmText = "Hapus", confirmColor = "#dc2626" }) {
     if (!open) return null;
 
     return (
@@ -18,8 +18,8 @@ export function ConfirmDialog({ open, message, onConfirm, onCancel }) {
                     </button>
                     <button onClick={onConfirm}
                         className="px-4 py-2 text-sm rounded-xl font-semibold hover:opacity-90"
-                        style={{ background: '#dc2626', color: 'white' }}>
-                        Hapus
+                        style={{ background: confirmColor, color: 'white' }}>
+                        {confirmText}
                     </button>
                 </div>
             </div>
